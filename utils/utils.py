@@ -7,7 +7,7 @@ def parse_reference_string(input_str: str) -> list:
     except ValueError:
         raise ValueError("Input must contain only space-separated integers.")
 
-def display_results(frame_states, steps, page_faults):
+def display_results(frame_states: list, steps: list, page_faults: int, flag: int) -> None:
     print("\n📊 Frame states after each step:")
     for i, state in enumerate(frame_states):
         print(f"Step {i+1}: {state}")
