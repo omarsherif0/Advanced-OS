@@ -26,4 +26,4 @@ def run(requests: list, initial: int, max_cylinder: int) -> tuple:
         current = closest
         index += 1
 
-    return [head_movements,[], total_movements]
+    return (head_movements,[], total_movements)

@@ -1,10 +1,10 @@
-from algorithms import lru, C_SCAN
+from algorithms import lru, C_SCAN, SSTF
 from utils.utils import display_results, parse_reference_string
 
 algorithms = {
     "lru": lru.run,
     "arb": "arb.run", # Additiona Reference Bit
-    "sstf": "SSTF.run",
+    "sstf": SSTF.run,
     "c_scan": C_SCAN.run 
 }
 
