@@ -1,11 +1,12 @@
-from algorithms import lru, C_SCAN, SSTF
+from algorithms import lru, C_SCAN, SSTF, optimal
 from utils.utils import display_results, parse_reference_string
 
 algorithms = {
     "lru": lru.run,
     "arb": "arb.run", # Additiona Reference Bit
     "sstf": SSTF.run,
-    "c_scan": C_SCAN.run 
+    "c_scan": C_SCAN.run,
+    "optimal": optimal.run,
 }
 
 def get_user_input():

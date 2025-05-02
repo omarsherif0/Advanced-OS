@@ -7,6 +7,8 @@ def run(reference_string: str, frames_num: int) -> list:
     frame_state = []
 
     for i, page in enumerate(reference_string):
+        if page in frames:
+            steps.append(f"Step number {i} page {page} hit.")
         if page not in frames:
             page_fault += 1
             if len(frames) == frames_num:
