@@ -1,4 +1,4 @@
-def run(requests: list, initial: int, max_cylinder: int) -> tuple: 
+def run(requests: list, initial: int, max_cylinder: int) -> dict: 
     current = initial
     total_movements = 0
     head_movements = []
@@ -13,7 +13,10 @@ def run(requests: list, initial: int, max_cylinder: int) -> tuple:
         total_movements += abs(current - requests[closest_cylinder_index])
         closest = requests.pop(closest_cylinder_index)
         current = closest
-        head_movements.append(f"Step {index}: Head moved to {closest}")
+        head_movements.append(f"Step {index}: Reserved request is {closest}")
         index += 1
-
-    return (head_movements,[], total_movements)
+    return {
+        "frame_states": head_movements,
+        "logs": [],
+        "faults": total_movements,
+    }

@@ -1,6 +1,6 @@
 from collections import deque
 
-def run(reference_string: str, frames_num: int) -> list: 
+def run(reference_string: str, frames_num: int) -> dict: 
     frames = deque(maxlen=frames_num)
     page_fault = 0
     steps = []
@@ -22,4 +22,8 @@ def run(reference_string: str, frames_num: int) -> list:
             frames.append(page)
             steps.append(f"Step number {i} page {page} were used.")
         frame_state.append(list(frames))
-    return [frame_state, steps, page_fault]
+    return {
+        "frame_states": frame_state,
+        "logs": steps,
+        "faults": page_fault,
+    }

@@ -1,4 +1,4 @@
-from algorithms import lru, C_SCAN, SSTF, optimal
+from algorithms import SC, lru, C_SCAN, SSTF, optimal
 from utils.utils import display_results, parse_reference_string
 
 algorithms = {
@@ -7,6 +7,7 @@ algorithms = {
     "sstf": SSTF.run,
     "c_scan": C_SCAN.run,
     "optimal": optimal.run,
+    "second chance": SC.run,
 }
 
 def get_user_input():
@@ -15,7 +16,7 @@ def get_user_input():
         print(f"- {name}")
 
     while True:
-        algorithm_choice = input("Choose an algorithm: ").strip().lower()
+        algorithm_choice = input("Choose an algorithm: ").lower()
         if algorithm_choice in algorithms:
             break
         else:
@@ -37,14 +38,15 @@ def main():
     algorithm, data, param1, param2, is_disk = get_user_input()
     run_algorithm = algorithms[algorithm]
 
-    if is_disk:
-        # SSTF, C-SCAN
-        frame_states, logs, faults = run_algorithm(data, param1, param2)
-    else:
-        # LRU Additional reference bit
-        frame_states, logs, faults = run_algorithm(data, param1)
+    results_dict = run_algorithm(data, param1, param2) if is_disk else run_algorithm(data, param1)
 
-    display_results(frame_states, logs, faults, is_disk)
+    frame_states = results_dict.pop("frame_states", [])
+    logs = results_dict.pop("logs", [])
+    faults = results_dict.pop("faults", 0)
+    others = results_dict
+
+    display_results(frame_states, logs, faults, others, is_disk)
+
 
 if __name__ == "__main__":
     main()

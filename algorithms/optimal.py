@@ -1,4 +1,4 @@
-def run(reference_string: str, frames_num: int) -> list:
+def run(reference_string: str, frames_num: int) -> dict:
     frames = []
     page_faults = 0
     steps = []
@@ -28,4 +28,8 @@ def run(reference_string: str, frames_num: int) -> list:
 
         frame_states.append(frames.copy())
 
-    return [frame_states, steps, page_faults]
+    return {
+        "frame_states": frame_states,
+        "logs": steps,
+        "faults": page_faults,
+    }
