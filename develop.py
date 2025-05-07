@@ -1,4 +1,4 @@
-from algorithms import SC, lru, C_SCAN, SSTF, optimal
+from algorithms import SC, lru, C_SCAN, SSTF, optimal, FIFO, SCAN, LOOK, C_LOOK
 from utils.utils import display_results, parse_reference_string
 
 algorithms = {
@@ -8,6 +8,10 @@ algorithms = {
     "c_scan": C_SCAN.run,
     "optimal": optimal.run,
     "second chance": SC.run,
+    "fifo":FIFO.run, 
+    "scan": "SCAN.run", 
+    "look": "LOOK.run",
+    "c-look": "C_LOOK.run"
 }
 
 def get_user_input():

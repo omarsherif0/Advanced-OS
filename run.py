@@ -1,13 +1,17 @@
-from algorithms import SC, lru, C_SCAN, SSTF, optimal
+from algorithms import SC, lru, ARB, C_SCAN, SSTF, optimal, FIFO, SCAN, LOOK, C_LOOK
 from utils.utils import display_results
 
 algorithms = {
-    "lru": lru.run,
-    "arb": "arb.run",  # Additional Reference Bit (you’ll want to implement the actual function)
-    "sstf": SSTF.run,
-    "c-scan": C_SCAN.run,
-    "optimal": optimal.run,
-    "second chance": SC.run,
+    "lru": lru.run, 
+    "arb": ARB.run,  # Additional Reference Bit
+    "sstf": SSTF.run, 
+    "c-scan": C_SCAN.run, 
+    "optimal": optimal.run, 
+    "second chance": SC.run, 
+    "fifo":FIFO.run, 
+    "scan": SCAN.run, 
+    "look": LOOK.run,
+    "c-look": C_LOOK.run
 }
 
 def run_simulation(algorithm: str, data: list, param1: int, param2: int = None):
