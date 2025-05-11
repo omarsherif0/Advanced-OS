@@ -1,19 +1,3 @@
-import json
-
-
-def replaceFrame(inMemory, currentState, requiredFrame):
-    Min = float("inf")
-    replaceIdx = -1
-    for idx, state in enumerate(currentState):
-        if Min > int(state, 2):
-            Min = int(state, 2)
-            replaceIdx = idx
-    message = f"Replaced page {inMemory[replaceIdx]} with page {requiredFrame} at frame {replaceIdx}"
-    currentState[replaceIdx] = "10000000"
-    inMemory[replaceIdx] = requiredFrame
-    return inMemory, currentState, message, replaceIdx
-
-
 def run(referenceString: list, framesNum: int) -> dict:
     countNotReferenced = [0 for _ in range(framesNum)]
     framesInMemory = [None for _ in range(framesNum)]

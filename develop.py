@@ -10,8 +10,8 @@ algorithms = {
     "second chance": SC.run,
     "fifo": FIFO.run,
     "scan": "SCAN.run",
-    "look": "LOOK.run",
-    "c-look": "C_LOOK.run",
+    "look": LOOK.run,
+    "c-look": C_LOOK.run,
 }
 
 
@@ -27,7 +27,7 @@ def get_user_input():
         else:
             print("Invalid choice. Please select from the available options.")
 
-    is_disk_algorithm = algorithm_choice in ["sstf", "c_scan"]
+    is_disk_algorithm = algorithm_choice in ["sstf", "c_scan", "look", "c-look"]
 
     if is_disk_algorithm:
         requests = list(
