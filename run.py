@@ -2,21 +2,22 @@ from algorithms import SC, lru, ARB, C_SCAN, SSTF, optimal, FIFO, SCAN, LOOK, C_
 from utils.utils import display_results
 
 algorithms = {
-    "lru": lru.run, 
+    "lru": lru.run,
     "arb": ARB.run,  # Additional Reference Bit
-    "sstf": SSTF.run, 
-    "c-scan": C_SCAN.run, 
-    "optimal": optimal.run, 
-    "second chance": SC.run, 
-    "fifo":FIFO.run, 
-    "scan": SCAN.run, 
+    "sstf": SSTF.run,
+    "c-scan": C_SCAN.run,
+    "optimal": optimal.run,
+    "second chance": SC.run,
+    "fifo": FIFO.run,
+    "scan": SCAN.run,
     "look": LOOK.run,
-    "c-look": C_LOOK.run
+    "c-look": C_LOOK.run,
 }
+
 
 def run_simulation(algorithm: str, data: list, param1: int, param2: int = None):
     algorithm = algorithm.lower()
-    
+
     if algorithm not in algorithms:
         raise ValueError(f"Unsupported algorithm '{algorithm}'")
 
@@ -37,7 +38,7 @@ def run_simulation(algorithm: str, data: list, param1: int, param2: int = None):
     display_results(frame_states, logs, faults, others, is_disk)
     return {
         "cylinders": frame_states,
-        #"logs": logs,
+        # "logs": logs,
         "seek_time": faults,
         # "others": others,
         # "is_disk": is_disk,
