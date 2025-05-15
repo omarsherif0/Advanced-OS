@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Virtual Memory Management Visualizer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      .frame {
+        transition: all 0.3s ease;
+      }
+      .frame.hit {
+        background-color: #4ade80;
+        transform: scale(1.05);
+      }
+      .frame.fault {
+        background-color: #f87171;
+        transform: scale(1.05);
+      }
+      .frame.active {
+        border: 3px solid #3b82f6;
+      }
+      .page-ref {
+        transition: all 0.3s ease;
+      }
+      .page-ref.active {
+        background-color: #3b82f6;
+        color: white;
+        transform: scale(1.1);
+      }
+      .algorithm-btn.active {
+        background-color: #3b82f6;
+        color: white;
+      }
+      .timeline-arrow {
+        position: absolute;
+        top: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: #3b82f6;
+        font-size: 1.5rem;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+      <h1 class="text-4xl font-bold text-center text-blue-800 mb-2">
+        Virtual Memory Management Visualizer
+      </h1>
+      <p class="text-center text-gray-600 mb-8">
+        Interactive visualization of page replacement algorithms
+      </p>
+
+      <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+        <div class="flex flex-wrap gap-4 mb-6">
+          <div class="w-full md:w-auto">
+            <label class="block text-gray-700 mb-2"
+              >Page Reference String</label
+            >
+            <div class="flex">
+              <input
+                type="text"
+                id="refString"
+                class="border rounded-l px-4 py-2 w-full md:w-64"
+                value="1,2,3,4,1,2,5,1,2,3,4,5"
+              />
+              <button
+                id="randomBtn"
+                class="bg-gray-200 hover:bg-gray-300 px-3 border-t border-b"
+              >
+                <i class="fas fa-random"></i>
+              </button>
+              <button
+                id="updateRefBtn"
+                class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-r"
+              >
+                Update
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-gray-700 mb-2">Number of Frames</label>
+            <select id="frameCount" class="border rounded px-4 py-2">
+              <option value="3">3 Frames</option>
+              <option value="4" selected>4 Frames</option>
+              <option value="5">5 Frames</option>
+            </select>
+          </div>
+
+          <div class="flex items-end">
+            <button
+              id="startBtn"
+              class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded"
+            >
+              <i class="fas fa-play mr-2"></i> Start
+            </button>
+            <button
+              id="resetBtn"
+              class="ml-2 bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
+            >
+              <i class="fas fa-redo mr-2"></i> Reset
+            </button>
+          </div>
+        </div>
+
+        <div
+          class="flex justify-center space-x-2 mb-8"
+          id="pageRefContainer"
+        ></div>
+
+        <div class="flex justify-center space-x-4 mb-6">
+          <button
+            class="algorithm-btn px-4 py-2 rounded border active"
+            data-algo="lru"
+          >
+            LRU
+          </button>
+          <button
+            class="algorithm-btn px-4 py-2 rounded border"
+            data-algo="fifo"
+          >
+            FIFO
+          </button>
+          <button
+            class="algorithm-btn px-4 py-2 rounded border"
+            data-algo="optimal"
+          >
+            Optimal
+          </button>
+          <button
+            class="algorithm-btn px-4 py-2 rounded border"
+            data-algo="arb"
+          >
+            Additional Reference Bit
+          </button>
+          <button
+            class="algorithm-btn px-4 py-2 rounded border"
+            data-algo="second chance"
+          >
+            Second chance
+          </button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <div id="visualizationContainer" class="min-w-max"></div>
+        </div>
+
+        <div class="mt-8 p-4 bg-blue-50 rounded-lg">
+          <div class="flex justify-between items-center mb-2">
+            <h3 class="text-lg font-semibold">Statistics</h3>
+            <div id="stats" class="text-gray-700"></div>
+          </div>
+          <div class="flex space-x-4">
+            <div class="flex items-center">
+              <div class="w-4 h-4 bg-green-400 rounded-full mr-2"></div>
+              <span>Page Hit</span>
+            </div>
+            <div class="flex items-center">
+              <div class="w-4 h-4 bg-red-400 rounded-full mr-2"></div>
+              <span>Page Fault</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-lg p-6">
+        <h2 class="text-2xl font-bold text-blue-800 mb-4">
+          About Page Replacement Algorithms
+        </h2>
+
+        <div class="grid md:grid-cols-3 gap-6">
+          <div class="border-l-4 border-blue-500 pl-4">
+            <h3 class="font-semibold text-lg mb-2">
+              FIFO (First-In-First-Out)
+            </h3>
+            <p class="text-gray-600">
+              Replaces the oldest page in memory. Simple to implement but
+              suffers from Belady's anomaly where increasing frames can increase
+              page faults.
+            </p>
+          </div>
+
+          <div class="border-l-4 border-purple-500 pl-4">
+            <h3 class="font-semibold text-lg mb-2">
+              LRU (Least Recently Used)
+            </h3>
+            <p class="text-gray-600">
+              Replaces the page that hasn't been used for the longest time. More
+              efficient than FIFO but requires more overhead to track usage.
+            </p>
+          </div>
+
+          <div class="border-l-4 border-green-500 pl-4">
+            <h3 class="font-semibold text-lg mb-2">Optimal Algorithm</h3>
+            <p class="text-gray-600">
+              Replaces the page that won't be used for the longest time in
+              future. Impossible to implement in practice but serves as a
+              benchmark.
+            </p>
+          </div>
+
+          <div class="border-l-4 border-green-500 pl-4">
+            <h3 class="font-semibold text-lg mb-2">
+              Additional Reference Bit Algorithm
+            </h3>
+            <p class="text-gray-600">
+              Uses reference bits and a shift register to approximate LRU
+              behavior.
+            </p>
+          </div>
+
+          <div class="border-l-4 border-green-500 pl-4">
+            <h3 class="font-semibold text-lg mb-2">Second Chance Algorithm</h3>
+            <p class="text-gray-600">
+              Gives pages a second chance using a reference bit before
+              replacement.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // DOM elements
+        const refStringInput = document.getElementById("refString");
+        const frameCountSelect = document.getElementById("frameCount");
+        const updateRefBtn = document.getElementById("updateRefBtn");
+        const randomBtn = document.getElementById("randomBtn");
+        const startBtn = document.getElementById("startBtn");
+        const resetBtn = document.getElementById("resetBtn");
+        const pageRefContainer = document.getElementById("pageRefContainer");
+        const visualizationContainer = document.getElementById(
+          "visualizationContainer"
+        );
+        const statsDiv = document.getElementById("stats");
+        const algorithmBtns = document.querySelectorAll(".algorithm-btn");
+
+        // State variables
+        let pageRefs = [];
+        let frameCount = 4;
+        let currentStep = 0;
+        let currentAlgorithm = "lru";
+        let animationInterval = null;
+        let isPlaying = false;
+        let speed = 1000; // ms per step
+        let resultData = null;
+
+        // Initialize
+        updatePageRefDisplay();
+
+        // Event listeners
+        updateRefBtn.addEventListener("click", updatePageRefs);
+        randomBtn.addEventListener("click", generateRandomRefString);
+        startBtn.addEventListener("click", togglePlayback);
+        resetBtn.addEventListener("click", resetVisualization);
+        algorithmBtns.forEach((btn) => {
+          btn.addEventListener("click", () => {
+            algorithmBtns.forEach((b) => b.classList.remove("active"));
+            btn.classList.add("active");
+            currentAlgorithm = btn.dataset.algo;
+            resetVisualization();
+          });
+        });
+
+        // Set LRU as default active algorithm
+
+        // Functions
+        function updatePageRefs() {
+          const refString = refStringInput.value.trim();
+          pageRefs = refString
+            .split(",")
+            .map((num) => num.trim())
+            .filter((num) => num !== "");
+          frameCount = parseInt(frameCountSelect.value);
+
+          // Make API call to get results
+          fetchResults();
+        }
+
+        function generateRandomRefString() {
+          const length = Math.floor(Math.random() * 10) + 8; // 8-17 references
+          let str = [];
+          for (let i = 0; i < length; i++) {
+            str.push(Math.floor(Math.random() * 5) + 1); // Pages 1-5
+          }
+          refStringInput.value = str.join(",");
+          updatePageRefs();
+        }
+
+        function updatePageRefDisplay() {
+          pageRefContainer.innerHTML = "";
+          pageRefs.forEach((ref, index) => {
+            const refElement = document.createElement("div");
+            refElement.className =
+              "page-ref w-10 h-10 rounded-full border-2 border-blue-300 flex items-center justify-center font-semibold cursor-pointer";
+            refElement.textContent = ref;
+            refElement.dataset.index = index;
+            refElement.addEventListener("click", () => {
+              if (!isPlaying) {
+                currentStep = index;
+                updateVisualization();
+              }
+            });
+            pageRefContainer.appendChild(refElement);
+          });
+
+          // Initial visualization
+          updateVisualization();
+        }
+
+        function resetVisualization() {
+          clearInterval(animationInterval);
+          isPlaying = false;
+          startBtn.innerHTML = '<i class="fas fa-play mr-2"></i> Start';
+          currentStep = 0;
+
+          // Fetch new results if algorithm changed
+          fetchResults();
+        }
+
+        function togglePlayback() {
+          if (isPlaying) {
+            clearInterval(animationInterval);
+            isPlaying = false;
+            startBtn.innerHTML = '<i class="fas fa-play mr-2"></i> Start';
+          } else {
+            isPlaying = true;
+            startBtn.innerHTML = '<i class="fas fa-pause mr-2"></i> Pause';
+
+            if (currentStep >= pageRefs.length) {
+              currentStep = 0;
+            }
+
+            animationInterval = setInterval(() => {
+              currentStep++;
+              if (currentStep >= pageRefs.length) {
+                clearInterval(animationInterval);
+                isPlaying = false;
+                startBtn.innerHTML = '<i class="fas fa-play mr-2"></i> Start';
+              }
+              updateVisualization();
+            }, speed);
+          }
+        }
+
+        function fetchResults() {
+          // Simulating API call to the Python backend
+          // In a real implementation, this would be a fetch or axios call
+
+          // For demonstration purposes, we'll simulate the Python algorithm
+          simulateAPICall(pageRefs, frameCount, currentAlgorithm)
+            .then((data) => {
+              resultData = data;
+              updatePageRefDisplay();
+            })
+            .catch((error) => {
+              console.error("Error fetching results:", error);
+            });
+        }
+
+        function simulateAPICall(pageRefs, frameCount, algorithm) {
+          return fetch("http://localhost:8001/run-memory", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              algorithm: algorithm,
+              requests: pageRefs.map(Number),
+              initial: frameCount,
+              final: null, // Optional; use a real value if needed for disk algorithms
+            }),
+          }).then((response) => {
+            if (!response.ok) {
+              throw new Error("API response was not OK");
+            }
+            return response.json();
+          });
+        }
+        function stepExists(i) {
+          return i >= 0 && i < resultData.frame_states.length ? i : 0;
+        }
+
+        function updateVisualization() {
+          if (!resultData) return;
+
+          const didFaultOccur = (() => {
+            if (currentStep === 0) return true; // First access is always a fault
+            const currentFrame = resultData.frame_states[currentStep] || [];
+            const prevFrame = resultData.frame_states[currentStep - 1] || [];
+            return !prevFrame.includes(pageRefs[currentStep]);
+          })();
+          // Highlight current page reference
+          document.querySelectorAll(".page-ref").forEach((el, idx) => {
+            el.classList.remove("active", "bg-red-400", "text-white");
+            if (idx === currentStep) {
+              el.classList.add("active");
+              // Check if current step is a fault (by checking if it changed any frame)
+              const isFault =
+                resultData.frame_states[stepExists(idx)]?.includes(
+                  pageRefs[idx]
+                ) &&
+                !resultData.frame_states[stepExists(idx) - 1]?.includes(
+                  pageRefs[idx]
+                );
+
+              if (isFault) {
+                el.classList.add("bg-red-400", "text-white");
+              }
+            }
+          });
+
+          // Update visualization based on the resultData
+          visualizationContainer.innerHTML = "";
+
+          // Create header row (steps)
+          const headerRow = document.createElement("div");
+          headerRow.className = "flex mb-2";
+
+          const emptyCell = document.createElement("div");
+          emptyCell.className =
+            "w-20 h-12 flex items-center justify-center font-semibold bg-gray-100 rounded mr-1";
+          emptyCell.textContent = "Frames";
+          headerRow.appendChild(emptyCell);
+
+          for (let i = 0; i <= currentStep; i++) {
+            const stepCell = document.createElement("div");
+            stepCell.className =
+              "w-16 h-12 flex items-center justify-center font-semibold border-b";
+            stepCell.textContent = i + 1;
+            headerRow.appendChild(stepCell);
+          }
+
+          visualizationContainer.appendChild(headerRow);
+
+          // Create rows for each frame
+          for (let frameIdx = 0; frameIdx < frameCount; frameIdx++) {
+            const frameRow = document.createElement("div");
+            frameRow.className = "flex mb-1";
+
+            // Frame label
+            const frameLabel = document.createElement("div");
+            frameLabel.className =
+              "w-16 h-12 flex items-center justify-center font-semibold bg-gray-100 rounded mr-1";
+            frameLabel.textContent = `Frame ${frameIdx + 1}`;
+            frameRow.appendChild(frameLabel);
+
+            // Frame values for each step
+            for (let step = 0; step <= currentStep; step++) {
+              const frameValue = document.createElement("div");
+              frameValue.className =
+                "frame w-16 h-12 flex items-center justify-center font-semibold border rounded mx-1";
+
+              // Add frame content if available
+              if (
+                resultData.frame_states[step] &&
+                frameIdx < resultData.frame_states[step].length
+              ) {
+                frameValue.textContent =
+                  resultData.frame_states[step][frameIdx];
+
+                // Check if this is a hit
+                const isHit =
+                  step > 0 &&
+                  resultData.frame_states[step][frameIdx] === pageRefs[step] &&
+                  resultData.frame_states[step - 1].includes(pageRefs[step]);
+
+                if (isHit) {
+                  frameValue.classList.add("hit");
+                }
+
+                // Check if this is a fault (recently replaced)
+                const isFault =
+                  step > 0 &&
+                  resultData.frame_states[step][frameIdx] === pageRefs[step] &&
+                  resultData.frame_states[step - 1][frameIdx] !==
+                    pageRefs[step];
+
+                if (isFault) {
+                  frameValue.classList.add("fault");
+                }
+              }
+
+              if (step === currentStep) {
+                frameValue.classList.add("active");
+              }
+
+              frameRow.appendChild(frameValue);
+            }
+
+            visualizationContainer.appendChild(frameRow);
+          }
+
+          // Add log entry
+          const logContainer = document.createElement("div");
+          logContainer.className = "mt-4 p-3 bg-gray-100 rounded text-gray-800";
+          if (resultData.logs[currentStep]) {
+            logContainer.textContent = resultData.logs[currentStep];
+          }
+          visualizationContainer.appendChild(logContainer);
+
+          // Update statistics
+          updateStatistics();
+        }
+
+        function updateStatistics() {
+          if (!resultData) return;
+
+          const totalSteps = pageRefs.length;
+          const faults = resultData.faults;
+          const hits = totalSteps - faults;
+          const hitRate = ((hits / totalSteps) * 100).toFixed(1);
+          const faultRate = ((faults / totalSteps) * 100).toFixed(1);
+
+          statsDiv.innerHTML = `
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="text-center">
+                            <div class="text-sm text-gray-500">Total Steps</div>
+                            <div class="text-xl font-bold">${totalSteps}</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-sm text-gray-500">Page Hits</div>
+                            <div class="text-xl font-bold text-green-600">${hits}</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-sm text-gray-500">Page Faults</div>
+                            <div class="text-xl font-bold text-red-600">${faults}</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-sm text-gray-500">Hit Rate</div>
+                            <div class="text-xl font-bold">${hitRate}%</div>
+                        </div>
+                    </div>
+                `;
+        }
+
+        // Initialize with default values
+        updatePageRefs();
+      });
+    </script>
+  </body>
+</html>
