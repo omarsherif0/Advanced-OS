@@ -22,6 +22,7 @@ def run_simulation(algorithm: str, data: list, param1: int, param2: int = None):
         raise ValueError(f"Unsupported algorithm '{algorithm}'")
 
     is_disk = algorithm in ["sstf", "c-scan", "look", "c-look", "scan"]
+    print("Is Disk Algorithm:", is_disk)
     run_algorithm = algorithms[algorithm]
 
     results_dict = (
@@ -41,10 +42,8 @@ def run_simulation(algorithm: str, data: list, param1: int, param2: int = None):
     # Return unified, explicitly structured output
     if is_disk:
         return {
-            "frame_states": frame_states,
-            "logs": [],  # keep logs field for consistency
-            "faults": faults,
-            "is_disk": True
+            "seek_time": faults,
+            "cylinders": frame_states
         }
     else:
         return {

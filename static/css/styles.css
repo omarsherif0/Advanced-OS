@@ -1,19 +1,12 @@
-body {
-  font-size: 16px;
-  color: #fff;
-  background-color: #61122f;
-  font-family: 'Oxygen', sans-serif;
-}
-
 /** HEADER **/
 #header-nav {
-  background-color: #f6b319;
+  background-color: #2019f6;
   border-radius: 0;
   border: 0;
 }
 
 #logo-img {
-  background: url('../images/restaurant-logo_large.png') no-repeat;
+  background: url("../images/restaurant-logo_large.png") no-repeat;
   width: 150px;
   height: 150px;
   margin: 10px 15px 10px 0;
@@ -23,8 +16,9 @@ body {
   padding-top: 25px;
 }
 
-.navbar-brand h1 { /* Restaurant name */
-  font-family: 'Lora', serif;
+.navbar-brand h1 {
+  /* Restaurant name */
+  font-family: "Lora", serif;
   color: #557c3e;
   font-size: 1.5em;
   text-transform: uppercase;
@@ -32,18 +26,21 @@ body {
   text-shadow: 1px 1px 1px #222;
   margin-top: 0;
   margin-bottom: 0;
-  line-height: .75;
+  line-height: 0.75;
 }
-.navbar-brand a:hover, .navbar-brand a:focus {
+.navbar-brand a:hover,
+.navbar-brand a:focus {
   text-decoration: none;
 }
-.navbar-brand p { /* Kosher cert */
+.navbar-brand p {
+  /* Kosher cert */
   color: #000;
   text-transform: uppercase;
-  font-size: .7em;
+  font-size: 0.7em;
   margin-top: 15px;
 }
-.navbar-brand p span { /* Star-K */
+.navbar-brand p span {
+  /* Star-K */
   vertical-align: middle;
 }
 
@@ -51,11 +48,11 @@ body {
   margin-top: 10px;
 }
 #nav-list a {
-  color: #951C49;
+  color: #951c49;
   text-align: center;
 }
 #nav-list a:hover {
-  background: #E7E7E7;
+  background: #e7e7e7;
 }
 #nav-list a span {
   font-size: 1.8em;
@@ -64,17 +61,20 @@ body {
 #phone {
   margin-top: 5px;
 }
-#phone a { /* Phone number */
+#phone a {
+  /* Phone number */
   text-align: right;
   padding-bottom: 0;
 }
-#phone div { /* We Deliver */
+#phone div {
+  /* We Deliver */
   color: #557c3e;
   text-align: right;
   padding-right: 15px;
 }
 
-.navbar-header button.navbar-toggle, .navbar-header .icon-bar {
+.navbar-header button.navbar-toggle,
+.navbar-header .icon-bar {
   border: 1px solid #61122f;
 }
 .navbar-header button.navbar-toggle {
@@ -82,4 +82,3 @@ body {
   margin-top: -30px;
 }
 /* END HEADER */
-

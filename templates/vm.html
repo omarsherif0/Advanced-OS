@@ -47,6 +47,54 @@
     </style>
   </head>
   <body class="bg-gray-100 min-h-screen">
+    <nav class="bg-white shadow-md">
+      <div class="max-w-7xl mx-auto px-4">
+        <div class="flex justify-between items-center h-16">
+          <!-- Brand -->
+          <div class="flex-shrink-0 text-blue-800 text-2xl font-bold">
+            <a href="/">Disk Scheduling Algorithms</a>
+          </div>
+
+          <!-- Toggle (for small screens) -->
+          <div class="md:hidden">
+            <button
+              id="navbarToggle"
+              class="text-gray-600 focus:outline-none"
+              onclick="document.getElementById('mobile-menu').classList.toggle('hidden')"
+            >
+              <i class="fas fa-bars fa-lg"></i>
+            </button>
+          </div>
+
+          <!-- Menu -->
+          <div class="hidden md:flex space-x-6 items-center">
+            <a href="/vm" class="text-gray-700 hover:text-blue-600">
+              <i class="fa fa-file-text mr-1"></i> VM Visualizer
+            </a>
+            <a href="/" class="text-gray-700 hover:text-blue-600">
+              <i class="fa fa-area-chart mr-1"></i> Simulate
+            </a>
+            <a href="#about" class="text-gray-700 hover:text-blue-600">
+              <i class="fa fa-user-circle mr-1"></i> About
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mobile menu -->
+      <div id="mobile-menu" class="md:hidden hidden px-4 pb-4">
+        <a href="/vm" class="block py-2 text-gray-700 hover:text-blue-600">
+          <i class="fa fa-file-text mr-1"></i> VM Visualizer
+        </a>
+        <a href="/" class="block py-2 text-gray-700 hover:text-blue-600">
+          <i class="fa fa-area-chart mr-1"></i> Simulate
+        </a>
+        <a href="#about" class="block py-2 text-gray-700 hover:text-blue-600">
+          <i class="fa fa-user-circle mr-1"></i> About
+        </a>
+      </div>
+    </nav>
+
     <div class="container mx-auto px-4 py-8">
       <h1 class="text-4xl font-bold text-center text-blue-800 mb-2">
         Virtual Memory Management Visualizer

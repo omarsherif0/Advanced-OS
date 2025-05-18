@@ -19,14 +19,14 @@ app.add_middleware(
 )
 
 class ScheduleRequest(BaseModel):
-    algorithm: Literal["fcfs", "sstf", "scan", "c-scan", "look", "c-look"]
+    algorithm: Literal["sstf", "scan", "c-scan", "look", "c-look"]
     requests: List[int]
     initial: int
     final: int
 
 class MemoryRequest(BaseModel):
     algorithm: Literal[
-        "lru", "optimal", "second chance", "fifo", "sstf", "arb", "scan", "c-scan", "look", "c-look"
+        "lru", "optimal", "second chance", "fifo", "sstf", "arb"
     ]
     requests: List[int]
     initial: int
@@ -40,6 +40,10 @@ templates = Jinja2Templates(directory="templates")
 @app.get("/", response_class=HTMLResponse)
 def read_root(request: Request):
     return templates.TemplateResponse("Simulate.html", {"request": request})
+
+@app.get("/vm")
+def read_vm(request: Request):
+    return templates.TemplateResponse("vm.html", {"request": request})
 
 
 @app.post("/run-scheduling")
@@ -57,6 +61,8 @@ def run_scheduling(data: ScheduleRequest):
 
 @app.post("/run-memory")
 def run_memory_scheduling(data: MemoryRequest):
+    print(f"initial: {data.initial}")
+    print(f"final: {data.final}")
     output = run_simulation(data.algorithm, data.requests, data.initial, data.final)
 
     return {

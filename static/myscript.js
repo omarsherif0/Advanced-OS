@@ -11,62 +11,44 @@ $(function () {
   });
 });
 
-$("#plot-button").click(function () {
+$("#plot-button").click(async function () {
   console.log("Plot button clicked");
-  var btn1 = document.getElementById("plot-button");
-  btn1.disabled = true;
+  $("#plot-button").prop("disabled", true);
 
-  var b = document.forms["myForm"]["bitstream-input"].value;
-  var i = document.forms["myForm"]["initial-input"].value;
-
-  if (b == "") {
+  // basic validation
+  const bitstream = $("#bitstream-input").val().trim();
+  const initial = $("#initial-input").val().trim();
+  if (!bitstream) {
     alert("Enter the Sequence of Request queue!");
-    return false;
+    return;
   }
-  if (b != "" && i == "") {
+  if (!initial) {
     alert("Enter the value of Initial Cylinder!");
-    return false;
+    return;
   }
 
-  var ini = parseInt(document.getElementById("initial-input").value);
-  var final = parseInt(document.getElementById("final-input").value);
-  var str = document.getElementById("bitstream-input").value;
-  var dir = document.getElementById("direction").value;
+  const ini = parseInt(initial, 10);
+  const final = parseInt($("#final-input").val(), 10);
+  const dir = $("#direction").val();
 
-  var inp = [],
-    r2 = str.split(" "),
-    r3;
-
-  for (a1 = 0; a1 < r2.length; ++a1) {
-    if (r2[a1] == "") {
-      continue;
-    }
-    r3 = parseInt(r2[a1]);
-    inp.push(r3);
-
-    if (r3 > final || ini > final) {
-      alert("Invalid Input: Final cylinder has to be Greater!");
-      return;
-    }
+  /* convert queue string → number[] */
+  const inp = bitstream.split(/\s+/).map(Number);
+  if (inp.some((v) => v > final || ini > final)) {
+    alert("Invalid Input: Final cylinder has to be Greater!");
+    return;
   }
 
-  final = parseInt(final);
-  ini = parseInt(ini);
+  $("#canvas").css("visibility", "visible");
 
-  document.getElementById("canvas").style.visibility = "visible";
-  setTimeout(function () {
-    document.getElementById("canvas").style.visibility = "visible";
-    myalgorithm(
-      document.getElementById("algorithm").value,
-      inp,
-      ini,
-      final,
-      dir,
-      "none"
-    );
+  // wait 500 ms (layout) then fetch + render
+  setTimeout(async () => {
+    await myalgorithm($("#algorithm").val(), inp, ini, final, dir);
+    // 👉 if you need the cylinder list, capture the return value:
+    // const cylinders = await myalgorithm(...);
+    // plotSomething(cylinders);
   }, 500);
 
-  // Optionally adjust layout for smaller screens (similar to animate-button logic)
+  /* responsive layout adjustments (unchanged) */
   if (window.matchMedia("(min-width: 1249px)").matches) {
     $(".container2").css("top", "800px");
   } else if (window.matchMedia("(min-width: 992px)").matches) {
@@ -80,175 +62,127 @@ $("#plot-button").click(function () {
   }
 });
 
-$("#animate-button").click(function () {
+/* ───── ANIMATE BUTTON ──────────────────────────────────────────── */
+$("#animate-button").click(async function () {
   console.log("Animation button clicked");
-  var btn1 = document.getElementById("animate-button");
-  btn1.disabled = true;
-  var b = document.forms["myForm"]["bitstream-input"].value;
-  var i = document.forms["myForm"]["initial-input"].value;
-  if (b == "") {
+  $("#animate-button").prop("disabled", true);
+
+  // basic validation
+  const bitstream = $("#bitstream-input").val().trim();
+  const initial = $("#initial-input").val().trim();
+  if (!bitstream) {
     alert("Enter the Sequence of Request queue!");
-    return false;
+    return;
   }
-  if (b != "" && i == "") {
+  if (!initial) {
     alert("Enter the value of Initial Cylinder!");
-    return false;
+    return;
   }
 
-  var ini = parseInt(document.getElementById("initial-input").value);
-  var final = parseInt(document.getElementById("final-input").value);
-  var str = document.getElementById("bitstream-input").value;
-  var dir = document.getElementById("direction").value;
+  const ini = parseInt(initial, 10);
+  const final = parseInt($("#final-input").val(), 10);
+  const dir = $("#direction").val();
 
-  var inp = [],
-    r2 = str.split(" "),
-    r3;
-  for (a1 = 0; a1 < r2.length; ++a1) {
-    if (r2[a1] == "") {
-      continue;
-    }
-    r3 = parseInt(r2[a1]);
-    inp.push(r3);
-
-    if (r3 > parseInt(final) || parseInt(ini) > parseInt(final)) {
-      alert("Invalid Input: Final cylinder has to be Greater!");
-      return;
-    }
+  const inp = bitstream.split(/\s+/).map(Number);
+  if (inp.some((v) => v > final || ini > final)) {
+    alert("Invalid Input: Final cylinder has to be Greater!");
+    return;
   }
 
-  final = parseInt(final);
-  ini = parseInt(ini);
+  $("#canvas").css("visibility", "visible");
 
+  /* layout tweaks for very wide screens (kept as-is) */
   if (
     $("div.left").hasClass("transform") &&
     window.matchMedia("(min-width: 1249px)").matches
   ) {
-    $(".left").css("width", "30%");
-    $(".left").css("margin", "30px");
-    $("#plot-button").css("margin-left", "30px");
-    $("#plot-button").css("margin-bottom", "5%");
+    $(".left").css({ width: "30%", margin: "30px" });
+    $("#plot-button").css({ "margin-left": "30px", "margin-bottom": "5%" });
     $("#animate-button").css("margin-bottom", "5%");
     $("#cmpr-button").css("margin-left", "25%");
     $(".container2").css("top", "800px");
     $(".container3").css("top", "1500px");
+  } else if (window.matchMedia("(min-width: 992px)").matches) {
+    $(".container2").css("top", "1250px");
+  } else if (window.matchMedia("(min-width: 768px)").matches) {
+    $(".container2").css("top", "1500px");
+  } else if (window.matchMedia("(min-width: 600px)").matches) {
+    $(".container2").css("top", "1450px");
+  } else {
+    $(".container2").css("top", "1350px");
+  }
 
-    setTimeout(function () {
-      document.getElementById("canvas").style.visibility = "visible";
-      cylinders = myalgorithm(
-        document.getElementById("algorithm").value,
+  /* 🔄 fetch results then animate */
+  try {
+    setTimeout(async () => {
+      const cylinders = await myalgorithm(
+        $("#algorithm").val(),
         inp,
         ini,
         final,
-        dir,
-        animation
+        dir
       );
+      animation(cylinders); // ✅ now cylinders is in scope
     }, 500);
-    animation(cylinders);
-  } else if (window.matchMedia("(min-width: 992px)").matches) {
-    document.getElementById("canvas").style.visibility = "visible";
-    cylinders = myalgorithm(
-      document.getElementById("algorithm").value,
-      inp,
-      ini,
-      final,
-      dir,
-      animation
-    );
-    $(".container2").css("top", "1250px");
-    animation(cylinders);
-  } else if (window.matchMedia("(min-width: 768px").matches) {
-    document.getElementById("canvas").style.visibility = "visible";
-    cylinders = myalgorithm(
-      document.getElementById("algorithm").value,
-      inp,
-      ini,
-      final,
-      dir,
-      animation
-    );
-    $(".container2").css("top", "1500px");
-    animation(cylinders);
-  } else if (window.matchMedia("(min-width: 600px").matches) {
-    document.getElementById("canvas").style.visibility = "visible";
-    cylinders = myalgorithm(
-      document.getElementById("algorithm").value,
-      inp,
-      ini,
-      final,
-      dir,
-      animation
-    );
-    $(".container2").css("top", "1450px");
-    animation(cylinders);
-  } else {
-    document.getElementById("canvas").style.visibility = "visible";
-    cylinders = myalgorithm(
-      document.getElementById("algorithm").value,
-      inp,
-      ini,
-      final,
-      dir,
-      animation
-    );
-    $(".container2").css("top", "1350px");
-    animation(cylinders);
+    animation(cylinders); // runs only after data arrives
+  } finally {
+    $("#animate-button").prop("disabled", false);
   }
 });
 
 /**** ANIMATION ****/
 
-function myalgorithm(alg, inp, ini, final, dir, callback) {
-  // Prepare the request data in the format your API expects
+/**
+ * Runs the selected disk–scheduling algorithm on the server
+ * and returns the ordered list of cylinders.
+ *
+ * @param {string}  alg   – name of the algorithm (“fcfs”, “sstf”, …)
+ * @param {number[]} inp  – request queue (e.g. [98,183,122,…])
+ * @param {number}  ini   – initial head position
+ * @param {number}  final – highest cylinder on the platters
+ * @param {string}  dir   – “left” | “right”  (only for SCAN / LOOK variants)
+ * @returns {Promise<number[]>}  resolves to the sequence of serviced cylinders
+ */
+async function myalgorithm(alg, inp, ini, final, dir) {
   const requestData = {
     algorithm: alg,
     requests: inp,
     initial: ini,
     final: final,
+    direction: dir, // include if your API expects it
   };
 
-  // Show loading indicator (optional)
-  document.getElementById("am_alg_name").innerHTML = "Loading...";
-  document.getElementById("am_alg_seek").innerHTML = "Calculating...";
+  // ⏳ show a quick “loading” message
+  document.getElementById("am_alg_name").textContent = "Loading…";
+  document.getElementById("am_alg_seek").textContent = "Calculating…";
 
-  // Make API call to your Python backend
-  fetch("/run-scheduling", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(requestData),
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      return response.json();
-    })
-    .then((data) => {
-      // Process the response from your API
-      const cylinders = data.cylinders; // This should be the sequence of disk positions
-      const seekTime = data.seek_time;
-      console.log("Seek Time:", seekTime);
-      console.log("Cylinders:", cylinders);
-      if (typeof callback === "function") {
-        callback(cylinders); // 💡 call animation or plot or whatever
-        document.getElementById("am_alg_name").innerHTML = alg.toUpperCase();
-        document.getElementById("am_alg_seek").innerHTML =
-          "Total head movements: " + seekTime;
-      }
-      return cylinders;
-
-      // Update the displayed algorithm name and seek time
-      document.getElementById("am_alg_name").innerHTML = alg.toUpperCase();
-      document.getElementById("am_alg_seek").innerHTML =
-        "Total head movements: " + seekTime;
-    })
-    .catch((error) => {
-      console.error("Error fetching algorithm data:", error);
-      document.getElementById("am_alg_name").innerHTML = "Error";
-      document.getElementById("am_alg_seek").innerHTML =
-        "Failed to run algorithm";
+  try {
+    const resp = await fetch("/run-scheduling", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(requestData),
     });
+
+    if (!resp.ok) {
+      throw new Error(`HTTP ${resp.status} – ${resp.statusText}`);
+    }
+
+    const { cylinders, seek_time } = await resp.json();
+
+    // 📝 update the UI
+    document.getElementById("am_alg_name").textContent = alg.toUpperCase();
+    document.getElementById(
+      "am_alg_seek"
+    ).textContent = `Total head movements: ${seek_time}`;
+
+    return cylinders; // let the caller await this
+  } catch (err) {
+    console.error("Error fetching algorithm data:", err);
+    document.getElementById("am_alg_name").textContent = "Error";
+    document.getElementById("am_alg_seek").textContent =
+      "Failed to run algorithm";
+    throw err; // propagate so the caller can handle it
+  }
 }
 
 function animation(cylinders) {
@@ -471,13 +405,25 @@ function getBitStreamAndPlot(event, r1, ini, final, alg, side, b) {
       const cylinders = data.cylinders; // This should be the sequence of disk positions
       const seekTime = data.seek_time;
 
-      // Create the plot data
+      // Create a sequence index for each cylinder access
+      const sequenceIndices = Array.from(
+        { length: cylinders.length },
+        (_, i) => i
+      );
+
+      // Create the plot data with explicit points for each access
       var trace = {
         x: cylinders,
-        y: Array.from({ length: cylinders.length }, (_, i) => i),
+        y: sequenceIndices,
         type: "scatter",
         mode: "lines+markers",
-        marker: { size: 10 },
+        marker: {
+          size: 10,
+          color: "blue",
+        },
+        line: {
+          color: "blue",
+        },
       };
 
       var plotData = [trace];
@@ -503,7 +449,19 @@ function getBitStreamAndPlot(event, r1, ini, final, alg, side, b) {
           showticklabels: false,
         },
         title: alg.toUpperCase() + " Disk Scheduling",
+        hovermode: "closest",
+        hoverlabel: {
+          bgcolor: "#FFF",
+          font: { size: 12 },
+        },
+        showlegend: false,
       };
+
+      // Add hover text to show each step
+      trace.text = cylinders.map((cyl, idx) => {
+        return `Cylinder: ${cyl} (Step ${idx})`;
+      });
+      trace.hoverinfo = "text";
 
       // Plot the graph
       Plotly.newPlot("graph_area", plotData, layout);
@@ -594,10 +552,30 @@ function cmprPlot(event, r1, ini, final, alg, side) {
       x: ["FCFS", "SSTF", "SCAN", "C-SCAN", "LOOK", "C-LOOK"],
       y: [seek1, seek2, seek3, seek4, seek5, seek6],
       type: "bar",
+      marker: {
+        color: [
+          "rgba(204,204,204,1)",
+          "rgba(222,45,38,0.8)",
+          "rgba(50,171,96,0.7)",
+          "rgba(128,60,255,0.7)",
+          "rgba(255,144,0,0.7)",
+          "rgba(0,128,128,0.7)",
+        ],
+      },
     },
   ];
 
-  Plotly.newPlot("cmpr_area", data);
+  var layout = {
+    title: "Disk Scheduling Algorithm Comparison",
+    xaxis: {
+      title: "Algorithm",
+    },
+    yaxis: {
+      title: "Total Seek Time",
+    },
+  };
+
+  Plotly.newPlot("cmpr_area", data, layout);
 
   document.getElementById("cmpr_area").style.visibility = "visible";
 }
