@@ -1,7 +1,6 @@
 def run(referenceString: list, framesNum: int) -> dict:
-    countNotReferenced = [0 for _ in range(framesNum)]
     framesInMemory = [None for _ in range(framesNum)]
-    frames = ["00000000" for _ in range(framesNum)]
+    refBits = ["00000000" for _ in range(framesNum)]
     steps = []
     pageFaults = 0
     refBitsHistory = []
@@ -9,49 +8,41 @@ def run(referenceString: list, framesNum: int) -> dict:
 
     # Logic
     for step, page in enumerate(referenceString):
-        ## Apply Aging for non-used Pages
+        # 1. Shift all reference bits to the right
         for i in range(framesNum):
-            if framesInMemory[i] != page and framesInMemory[i] is not None:
-                countNotReferenced[i] += 1
-                if countNotReferenced[i] % 5 == 0:
-                    frames[i] = "0" + frames[i][:-1]
-            elif framesInMemory[i] == page:
-                countNotReferenced[i] = 0
+            refBits[i] = "0" + refBits[i][:-1]  # Shift right, MSB = 0 by default
 
-        ## The Main Logic
+        # 2. Page Hit
         if page in framesInMemory:
-            steps.append(f"Step {step}: Page {page} hit.")
             pos = framesInMemory.index(page)
-            frames[pos] = "1" + frames[pos][:-1]
-            countNotReferenced[pos] = 0
+            refBits[pos] = "1" + refBits[pos][1:]  # Set MSB = 1
+            steps.append(f"Step {step}: Page {page} hit.")
         else:
+            # 3. Page Fault
+            pageFaults += 1
+            steps.append(f"Step {step}: Page {page} fault.")
+
+            # 3.a. Insert if empty frame exists
             if None in framesInMemory:
                 pos = framesInMemory.index(None)
                 framesInMemory[pos] = page
-                pageFaults += 1
-                steps.append(f"Step {step}: Page {page} fault.")
-                steps.append(
-                    f"Step {step}: Inserted page {page} at the empty frame {pos}."
-                )
-                countNotReferenced[pos] = 0
-                frames[pos] = "1" + frames[pos][:-1]
+                refBits[pos] = "10000000"  # MSB = 1
+                steps.append(f"Step {step}: Inserted page {page} at empty frame {pos}.")
             else:
-                pageFaults += 1
-                steps.append(f"Step {step}: Page {page} fault.")
-                replaceIdx = min(range(framesNum), key=lambda i: int(frames[i], 2))
+                # 3.b. Replace page with lowest reference value
+                replaceIdx = min(range(framesNum), key=lambda i: int(refBits[i], 2))
                 replacedPage = framesInMemory[replaceIdx]
                 framesInMemory[replaceIdx] = page
-                frames[replaceIdx] = "10000000"
-                countNotReferenced[replaceIdx] = 0
+                refBits[replaceIdx] = "10000000"  # New page, MSB = 1
                 steps.append(
                     f"Step {step}: Replaced page {replacedPage} with page {page} at frame {replaceIdx}."
                 )
-        frameState.append(framesInMemory.copy())
 
-        ## Frame State of Each Step
-        logs = []
-        logs = [f"{inMem}: {frame}" for inMem, frame in zip(framesInMemory, frames)]
-        refBitsHistory.append(logs)
+        # Track each step
+        frameState.append(framesInMemory.copy())
+        refBitsHistory.append(
+            [f"{pg}: {bits}" for pg, bits in zip(framesInMemory, refBits)]
+        )
 
     # Output
     return {
